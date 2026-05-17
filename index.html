@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Litsey Tayyorgarlik</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #070d1a;
+    --card: #0f1b2d;
+    --card2: #162033;
+    --border: #1e2f47;
+    --gold: #f0b429;
+    --gold2: #ffd166;
+    --green: #06d6a0;
+    --blue: #4895ef;
+    --red: #ef476f;
+    --purple: #7b2fff;
+    --text: #eaf0fb;
+    --muted: #556680;
+    --radius: 16px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding-bottom: 80px;
+  }
+
+  body::before {
+    content:'';
+    position:fixed;
+    inset:0;
+    background:
+      radial-gradient(ellipse 70% 40% at 50% 0%, rgba(72,149,239,0.1) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 30% at 80% 90%, rgba(240,180,41,0.07) 0%, transparent 60%);
+    pointer-events:none;
+    z-index:0;
+  }
+
+  .page { display:none; position:relative; z-index:1; animation: fadeIn 0.3s ease; }
+  .page.active { display:block; }
+
+  @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── NAV ── */
+  .nav {
+    position:fixed; bottom:0; left:0; right:0;
+    background: rgba(10,18,32,0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display:flex;
+    z-index:100;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .nav-btn {
+    flex:1; display:flex; flex-direction:column; align-items:center;
+    gap:4px; padding:10px 4px; cursor:pointer;
+    color:var(--muted); font-size:10px; font-weight:600;
+    text-transform:uppercase; letter-spacing:0.5px;
+    transition:color 0.2s;
+    background:none; border:none; font-family:'DM Sans',sans-serif;
+  }
+
+  .nav-btn .icon { font-size:22px; transition:transform 0.2s; }
+  .nav-btn.active { color:var(--gold); }
+  .nav-btn.active .icon { transform:scale(1.15); }
+
+  /* ── HEADER ── */
+  .page-header {
+    padding: 20px 16px 0;
+    margin-bottom: 20px;
+  }
+
+  .page-title {
+    font-family:'Unbounded',sans-serif;
+    font-size:22px; font-weight:900;
+    line-height:1.1;
+  }
+
+  .page-title span { color:var(--gold); }
+  .page-sub { color:var(--muted); font-size:13px; margin-top:4px; }
+
+  /* ── CARDS ── */
+  .card {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:16px;
+    margin: 0 16px 12px;
+  }
+
+  /* ── HOME PAGE ── */
+  .hero {
+    margin: 0 16px 16px;
+    background: linear-gradient(135deg, #0f2044 0%, #162033 100%);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .hero::after {
+    content:'🎓';
+    position:absolute;
+    right:16px; top:50%;
+    transform:translateY(-50%);
+    font-size:64px;
+    opacity:0.15;
+  }
+
+  .hero-badge {
+    display:inline-block;
+    background:rgba(240,180,41,0.15);
+    border:1px solid rgba(240,180,41,0.3);
+    color:var(--gold);
+    font-size:10px;
+    letter-spacing:2px;
+    padding:4px 12px;
+    border-radius:20px;
+    margin-bottom:12px;
+    text-transform:uppercase;
+    font-weight:600;
+  }
+
+  .hero-title {
+    font-family:'Unbounded',sans-serif;
+    font-size:20px;
+    font-weight:900;
+    line-height:1.2;
+    margin-bottom:6px;
+  }
+
+  .hero-sub { font-size:13px; color:var(--muted); }
+
+  /* Stats row */
+  .stats-row {
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin: 0 16px 16px;
+  }
+
+  .stat-box {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px 10px;
+    text-align:center;
+  }
+
+  .stat-num {
+    font-family:'Unbounded',sans-serif;
+    font-size:22px; font-weight:700;
+    color:var(--gold);
+  }
+
+  .stat-lbl { font-size:11px; color:var(--muted); margin-top:2px; }
+
+  /* Progress */
+  .prog-bar {
+    height:8px;
+    background:var(--border);
+    border-radius:99px;
+    overflow:hidden;
+    margin-top:8px;
+  }
+
+  .prog-fill {
+    height:100%;
+    border-radius:99px;
+    background:linear-gradient(90deg,var(--blue),var(--gold));
+    transition:width 0.8s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Quick actions */
+  .quick-grid {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin: 0 16px 12px;
+  }
+
+  .quick-btn {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:16px;
+    cursor:pointer;
+    transition:all 0.2s;
+    text-align:left;
+  }
+
+  .quick-btn:active { transform:scale(0.97); }
+  .quick-btn .qb-icon { font-size:28px; margin-bottom:8px; }
+  .quick-btn .qb-title { font-size:14px; font-weight:600; }
+  .quick-btn .qb-sub { font-size:11px; color:var(--muted); margin-top:2px; }
+
+  /* ── DARSLAR PAGE ── */
+  .week-tabs {
+    display:flex;
+    gap:8px;
+    padding: 0 16px 16px;
+    overflow-x:auto;
+  }
+
+  .week-tabs::-webkit-scrollbar { display:none; }
+
+  .wtab {
+    flex-shrink:0;
+    padding:8px 18px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:var(--card);
+    color:var(--muted);
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    transition:all 0.2s;
+    font-family:'DM Sans',sans-serif;
+  }
+
+  .wtab.active { background:var(--blue); border-color:var(--blue); color:#fff; }
+
+  .week-content { display:none; }
+  .week-content.active { display:block; }
+
+  .day-item {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px 16px;
+    margin: 0 16px 10px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    cursor:pointer;
+    transition:all 0.2s;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .day-item::before {
+    content:'';
+    position:absolute;
+    left:0;top:0;bottom:0;
+    width:3px;
+    background:var(--blue);
+    opacity:0;
+    transition:opacity 0.2s;
+  }
+
+  .day-item:active { transform:scale(0.98); }
+  .day-item.done { border-color:rgba(6,214,160,0.35); background:rgba(6,214,160,0.05); }
+  .day-item.done::before { background:var(--green); opacity:1; }
+
+  .check-box {
+    width:28px; height:28px;
+    border-radius:8px;
+    border:2px solid var(--border);
+    background:var(--card2);
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px;
+    flex-shrink:0;
+    transition:all 0.2s;
+  }
+
+  .day-item.done .check-box { background:var(--green); border-color:var(--green); }
+
+  .day-info { flex:1; }
+  .day-days { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:2px; }
+  .day-topic { font-size:14px; font-weight:600; line-height:1.3; }
+
+  .tag {
+    font-size:10px; font-weight:700;
+    padding:3px 9px;
+    border-radius:20px;
+    flex-shrink:0;
+  }
+
+  .tag-g { background:rgba(72,149,239,0.2); color:#93c5fd; }
+  .tag-v { background:rgba(240,180,41,0.2); color:#fde68a; }
+  .tag-r { background:rgba(6,214,160,0.2); color:#6ee7b7; }
+  .tag-t { background:rgba(239,71,111,0.2); color:#fda4af; }
+  .tag-i { background:rgba(123,47,255,0.2); color:#d8b4fe; }
+  .tag-m { background:rgba(14,165,233,0.2); color:#7dd3fc; }
+
+  /* ── TEST PAGE ── */
+  .test-subjects {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin: 0 16px 16px;
+  }
+
+  .subj-card {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:20px 16px;
+    text-align:center;
+    cursor:pointer;
+    transition:all 0.2s;
+  }
+
+  .subj-card:active { transform:scale(0.97); }
+  .subj-card .s-icon { font-size:36px; margin-bottom:10px; }
+  .subj-card .s-name { font-size:14px; font-weight:700; }
+  .subj-card .s-count { font-size:11px; color:var(--muted); margin-top:3px; }
+
+  /* Test modal */
+  .test-modal {
+    display:none;
+    position:fixed;
+    inset:0;
+    background:var(--bg);
+    z-index:200;
+    overflow-y:auto;
+    animation:fadeIn 0.3s ease;
+  }
+
+  .test-modal.open { display:block; }
+
+  .test-header {
+    padding:16px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    border-bottom:1px solid var(--border);
+    position:sticky;
+    top:0;
+    background:var(--bg);
+    z-index:1;
+  }
+
+  .back-btn {
+    width:36px; height:36px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:var(--card);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    font-size:18px;
+    flex-shrink:0;
+  }
+
+  .test-progress-bar {
+    flex:1;
+    height:6px;
+    background:var(--border);
+    border-radius:99px;
+    overflow:hidden;
+  }
+
+  .test-progress-fill {
+    height:100%;
+    background:linear-gradient(90deg,var(--blue),var(--gold));
+    border-radius:99px;
+    transition:width 0.4s ease;
+  }
+
+  .q-num {
+    font-family:'Unbounded',sans-serif;
+    font-size:12px;
+    color:var(--muted);
+    flex-shrink:0;
+  }
+
+  .question-area { padding:24px 16px 16px; }
+
+  .q-text {
+    font-size:18px;
+    font-weight:600;
+    line-height:1.5;
+    margin-bottom:24px;
+  }
+
+  .options { display:flex; flex-direction:column; gap:10px; }
+
+  .opt-btn {
+    padding:14px 16px;
+    border-radius:14px;
+    border:2px solid var(--border);
+    background:var(--card);
+    color:var(--text);
+    font-size:15px;
+    text-align:left;
+    cursor:pointer;
+    transition:all 0.2s;
+    font-family:'DM Sans',sans-serif;
+  }
+
+  .opt-btn:active { transform:scale(0.98); }
+  .opt-btn.correct { border-color:var(--green); background:rgba(6,214,160,0.1); color:var(--green); }
+  .opt-btn.wrong { border-color:var(--red); background:rgba(239,71,111,0.1); color:var(--red); }
+
+  .result-screen {
+    display:none;
+    text-align:center;
+    padding:40px 24px;
+  }
+
+  .result-emoji { font-size:64px; margin-bottom:16px; }
+  .result-score {
+    font-family:'Unbounded',sans-serif;
+    font-size:48px;
+    font-weight:900;
+    color:var(--gold);
+  }
+
+  .result-label { font-size:14px; color:var(--muted); margin-top:4px; }
+  .result-msg { font-size:16px; font-weight:600; margin-top:16px; }
+
+  .retry-btn {
+    margin-top:24px;
+    padding:14px 32px;
+    border-radius:14px;
+    background:var(--blue);
+    color:#fff;
+    border:none;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    font-family:'DM Sans',sans-serif;
+  }
+
+  /* ── LEADERBOARD ── */
+  .lb-item {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px 16px;
+    margin: 0 16px 10px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+
+  .lb-rank {
+    font-family:'Unbounded',sans-serif;
+    font-size:16px;
+    font-weight:900;
+    width:32px;
+    text-align:center;
+    flex-shrink:0;
+  }
+
+  .lb-avatar {
+    width:40px; height:40px;
+    border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px;
+    flex-shrink:0;
+  }
+
+  .lb-info { flex:1; }
+  .lb-name { font-size:15px; font-weight:600; }
+  .lb-detail { font-size:12px; color:var(--muted); margin-top:2px; }
+
+  .lb-score {
+    font-family:'Unbounded',sans-serif;
+    font-size:16px;
+    font-weight:700;
+    color:var(--gold);
+  }
+
+  /* ── PROGRESS PAGE ── */
+  .prog-subject {
+    margin-bottom:16px;
+  }
+
+  .prog-subj-header {
+    display:flex;
+    justify-content:space-between;
+    font-size:14px;
+    font-weight:600;
+    margin-bottom:8px;
+  }
+
+  .prog-subj-pct {
+    font-family:'Unbounded',sans-serif;
+    font-size:13px;
+  }
+
+  .score-calc {
+    background:var(--card2);
+    border-radius:12px;
+    padding:14px;
+    margin-top:12px;
+  }
+
+  .calc-row {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:6px 0;
+    font-size:13px;
+    border-bottom:1px solid var(--border);
+  }
+
+  .calc-row:last-child { border-bottom:none; }
+  .calc-val {
+    font-family:'Unbounded',sans-serif;
+    font-size:14px;
+    color:var(--gold);
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HOME PAGE ═══════════════ -->
+<div class="page active" id="page-home">
+  <div style="padding-top:20px">
+    <div class="hero">
+      <div class="hero-badge">🎯 1 Oylik Dastur</div>
+      <div class="hero-title">Litsey<br>Tayyorgarlik</div>
+      <div class="hero-sub">Iqtisodiyot · JIDU · 2025</div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-num" id="h-done">0</div>
+        <div class="stat-lbl">Bajarildi</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="h-tests">0</div>
+        <div class="stat-lbl">Testlar</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">146</div>
+        <div class="stat-lbl">Max ball</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:4px">
+        <span>📈 Umumiy progress</span>
+        <span style="color:var(--gold);font-family:'Unbounded',sans-serif;font-size:12px" id="h-pct">0%</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="h-fill" style="width:0%"></div></div>
+    </div>
+
+    <div style="padding:0 16px 8px;font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:1px">Tezkor kirish</div>
+
+    <div class="quick-grid">
+      <div class="quick-btn" onclick="goPage('darslar')">
+        <div class="qb-icon">📚</div>
+        <div class="qb-title">Dars Rejasi</div>
+        <div class="qb-sub">28 kunlik jadval</div>
+      </div>
+      <div class="quick-btn" onclick="goPage('test')">
+        <div class="qb-icon">✅</div>
+        <div class="qb-title">Test Ishlash</div>
+        <div class="qb-sub">Ingliz, Math, IQ</div>
+      </div>
+      <div class="quick-btn" onclick="goPage('progress')">
+        <div class="qb-icon">📊</div>
+        <div class="qb-title">Statistika</div>
+        <div class="qb-sub">Ball kalkulyator</div>
+      </div>
+      <div class="quick-btn" onclick="goPage('rating')">
+        <div class="qb-icon">🏆</div>
+        <div class="qb-title">Reyting</div>
+        <div class="qb-sub">Top o'quvchilar</div>
+      </div>
+    </div>
+
+    <div class="card" style="background:rgba(240,180,41,0.07);border-color:rgba(240,180,41,0.2)">
+      <div style="font-size:13px;font-weight:600;color:var(--gold);margin-bottom:4px">💡 Bugungi maslahat</div>
+      <div style="font-size:13px;color:var(--muted)" id="daily-tip">Har kuni kamida 2 soat o'qing. Doimiylik — muvaffaqiyat kaliti!</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ DARSLAR PAGE ═══════════════ -->
+<div class="page" id="page-darslar">
+  <div class="page-header">
+    <div class="page-title">Dars <span>Rejasi</span></div>
+    <div class="page-sub">4 hafta · 16 blok · Ingliz tili + Math</div>
+  </div>
+
+  <div class="week-tabs">
+    <button class="wtab active" onclick="showWeek(0,this)">1-Hafta</button>
+    <button class="wtab" onclick="showWeek(1,this)">2-Hafta</button>
+    <button class="wtab" onclick="showWeek(2,this)">3-Hafta</button>
+    <button class="wtab" onclick="showWeek(3,this)">4-Hafta</button>
+  </div>
+
+  <!-- Week 1 -->
+  <div class="week-content active" id="wc-0">
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:2px">📚 1-Hafta — Grammatika Poydevori</div>
+      <div style="font-size:12px;color:var(--muted)">Ingliz tili asosiy mavzulari</div>
+    </div>
+    <div class="day-item" onclick="toggleDay(this,'day1')">
+      <div class="check-box" id="day1">✓</div>
+      <div class="day-info">
+        <div class="day-days">1–2 Kun</div>
+        <div class="day-topic">Present, Past, Future Tenses — barcha turlari</div>
+      </div>
+      <span class="tag tag-g">Grammar</span>
+    </div>
+    <div class="day-item" onclick="toggleDay(this,'day2')">
+      <div class="check-box" id="day2">✓</div>
+      <div class="day-info">
+        <div class="day-days">3–4 Kun</div>
+        <div class="day-topic">Modal Verbs — can, must, should, have to</div>
+      </div>
+      <span class="tag tag-g">Grammar</span>
+    </div>
+    <div class="day-item" onclick="toggleDay(this,'day3')">
+      <div class="check-box" id="day3">✓</div>
+      <div class="day-info">
+        <div class="day-days">5–6 Kun</div>
+        <div class="day-topic">Conditionals — 0, 1, 2, 3-tur</div>
+      </div>
+      <span class="tag tag-g">Grammar</span>
+    </div>
+    <div class="day-item" onclick="toggleDay(this,'day4')">
+      <div class="check-box" id="day4">✓</div>
+      <div class="day-info">
+        <div class="day-days">7-Kun</div>
+        <div class="day-topic">🔁 Takrorlash + Mini test (20 savol)</div>
+      </div>
+      <span class="tag tag-t">Test</span>
+    </div>
+  </div>
+
+  <!-- Week 2 -->
+  <div class="week-content" id="wc-1">
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:2px">✏️ 2-Hafta — Grammar Davomi</div>
+      <div style="font-size:12px;color:var(--muted)">Passive Voice, Articles, Relative Clauses</div>
+    </div>
+    <div class="day-item" onclick="toggleDay(this,'day5')">
+      <div class="check-box" id="day5">✓</div>
+      <div class="day-info">
+        <div class="day-days">1–2 Kun</div>
+        <div class="day-topic">Passive Voice — barcha zamonlarda</div>
+      </div>
+      <span class="tag tag-g">Grammar</span>
+    </div>
+    <div class="day-item" onclick="toggleDay(this,'day6')">
+      <div class="check-box" id="day6">✓</div>
+      <div class="day-info">
+        <div class="day-days">3–4 Kun</div>
+        <div class="day-topic">Articles (a, an, the) + Prepositions</div>
+      </div>
+      <span class="tag tag-g">Grammar</span>
+    </div>
+    <div class="day-item" onclick="toggleDay(this,'day7')">
+      <div class="check-box" id="day7">✓</div>
+      <div class="day-info">
+        <div class="day-days">5–6 Kun</div>
+        <div class="day-topic">Relative Clauses — who, which, that, where</div>
+      </div>
+      <span class="tag tag-g">Grammar</span>
+    </div>
+    <div class="day-item" onclick="toggleDay(this,'day8')">
+      <div class="check-box" id="day8">✓</div>
+      <div class="day-info">
+        <div class="day-days">7-Kun</div>
+        <div class="day-topic">🔁 Takrorlash + Grammar test</div>
+      </div>
+      <span class="tag tag-t">Test</span>
+    </div>
+  </div>
+
+  <!-- Week 3 -->
+  <div class="week-content" id="wc-2">
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:2px">🔤 3-Hafta — Vocabulary + Reading</div>
+      <div style="font-size:12px;color:var(--muted)">So'z boyligi va matn tushunish</div>
+    </div>
+    <div class="day-item" onclick="toggleDay(this,'day9')">
+      <div class="check-box" id="day9">✓</div>
+      <div class="day-info">
+        <div class="day-days">1–2 Kun</div>
+        <div class="day-topic">Iqtisodiyot & biznes so'zlari (50+ ta)</div>
+      </div>
+      <span class="tag tag-v">Vocab</span>
+    </div>
+    <div class="day-item" onclick="toggleDay(this,'day10')">
+      <div class="check-box" id="day10">✓</div>
+      <div class="day-info">
+        <div class="day-days">3–4 Kun</div>
+        <div class="day-topic">Word Formation — suffixes & prefixes</div>
+      </div>
+      <span class="tag tag-v">Vocab</span>
+    </div>
+    <div class="day-item" onclick="toggleDay(this,'day11')">
+      <div class="check-box" id="day11">✓</div>
+      <div class="day-info">
+        <div class="day-days">5–6 Kun</div>
+        <div class="day-topic">Reading Comprehension mashqlari</div>
+      </div>
+      <span class="tag tag-r">Reading</span>
+    </div>
+    <div class="day-item" onclick="toggleDay(this,'day12')">
+      <div class="check-box" id="day12">✓</div>
+      <div class="day-info">
+        <div class="day-days">7-Kun</div>
+        <div class="day-topic">🔁 To'liq test simulyatsiyasi</div>
+      </div>
+      <span class="tag tag-t">Test</span>
+    </div>
+  </div>
+
+  <!-- Week 4 -->
+  <div class="week-content" id="wc-3">
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:2px">🏁 4-Hafta — Mustahkamlash & IQ</div>
+      <div style="font-size:12px;color:var(--muted)">Zaif joylar + IQ + Final test</div>
+    </div>
+    <div class="day-item" onclick="toggleDay(this,'day13')">
+      <div class="check-box" id="day13">✓</div>
+      <div class="day-info">
+        <div class="day-days">1–2 Kun</div>
+        <div class="day-topic">Zaif mavzularni qayta ishlash</div>
+      </div>
+      <span class="tag tag-g">Grammar</span>
+    </div>
+    <div class="day-item" onclick="toggleDay(this,'day14')">
+      <div class="check-box" id="day14">✓</div>
+      <div class="day-info">
+        <div class="day-days">3–4 Kun</div>
+        <div class="day-topic">IQ mashqlari — mantiq, ketma-ketlik</div>
+      </div>
+      <span class="tag tag-i">IQ</span>
+    </div>
+    <div class="day-item" onclick="toggleDay(this,'day15')">
+      <div class="check-box" id="day15">✓</div>
+      <div class="day-info">
+        <div class="day-days">5–6 Kun</div>
+        <div class="day-topic">Matematika — qiyin masalalar + testlar</div>
+      </div>
+      <span class="tag tag-m">Math</span>
+    </div>
+    <div class="day-item" onclick="toggleDay(this,'day16')">
+      <div class="check-box" id="day16">✓</div>
+      <div class="day-info">
+        <div class="day-days">7-Kun</div>
+        <div class="day-topic">🏆 Final imtihon simulyatsiyasi (60 savol)</div>
+      </div>
+      <span class="tag tag-t">Final</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ TEST PAGE ═══════════════ -->
+<div class="page" id="page-test">
+  <div class="page-header">
+    <div class="page-title">Test <span>Ishlash</span></div>
+    <div class="page-sub">Fan tanlang va boshlang</div>
+  </div>
+
+  <div class="test-subjects">
+    <div class="subj-card" onclick="startTest('english')">
+      <div class="s-icon">🇬🇧</div>
+      <div class="s-name">Ingliz tili</div>
+      <div class="s-count">10 savol</div>
+    </div>
+    <div class="subj-card" onclick="startTest('math')">
+      <div class="s-icon">📐</div>
+      <div class="s-name">Matematika</div>
+      <div class="s-count">10 savol</div>
+    </div>
+    <div class="subj-card" onclick="startTest('iq')">
+      <div class="s-icon">🧠</div>
+      <div class="s-name">IQ / Mantiq</div>
+      <div class="s-count">10 savol</div>
+    </div>
+    <div class="subj-card" onclick="startTest('full')">
+      <div class="s-icon">🏆</div>
+      <div class="s-name">To'liq test</div>
+      <div class="s-count">30 savol</div>
+    </div>
+  </div>
+
+  <div class="card" style="background:rgba(72,149,239,0.07);border-color:rgba(72,149,239,0.2)">
+    <div style="font-size:13px;font-weight:600;color:var(--blue);margin-bottom:6px">📊 Test natijalari</div>
+    <div id="test-history" style="font-size:13px;color:var(--muted)">Hali test ishlamadingiz</div>
+  </div>
+</div>
+
+<!-- Test Modal -->
+<div class="test-modal" id="test-modal">
+  <div class="test-header">
+    <div class="back-btn" onclick="closeTest()">←</div>
+    <div class="test-progress-bar"><div class="test-progress-fill" id="t-prog"></div></div>
+    <div class="q-num" id="q-num">1/10</div>
+  </div>
+  <div class="question-area" id="q-area">
+    <div class="q-text" id="q-text"></div>
+    <div class="options" id="q-opts"></div>
+  </div>
+  <div class="result-screen" id="result-screen">
+    <div class="result-emoji" id="r-emoji">🎉</div>
+    <div class="result-score" id="r-score"></div>
+    <div class="result-label" id="r-label"></div>
+    <div class="result-msg" id="r-msg"></div>
+    <button class="retry-btn" onclick="closeTest()">Qaytish</button>
+  </div>
+</div>
+
+<!-- ═══════════════ PROGRESS PAGE ═══════════════ -->
+<div class="page" id="page-progress">
+  <div class="page-header">
+    <div class="page-title">Mening <span>Statistikam</span></div>
+    <div class="page-sub">Ball kalkulyatori va progress</div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:14px;font-weight:700;margin-bottom:16px">📈 Dars progressi</div>
+    <div class="prog-subject">
+      <div class="prog-subj-header">
+        <span>📚 Ingliz tili (Grammar)</span>
+        <span class="prog-subj-pct" id="p-eng" style="color:var(--blue)">0%</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="pf-eng" style="width:0%;background:var(--blue)"></div></div>
+    </div>
+    <div class="prog-subject">
+      <div class="prog-subj-header">
+        <span>📐 Matematika</span>
+        <span class="prog-subj-pct" id="p-math" style="color:var(--gold)">0%</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="pf-math" style="width:0%;background:var(--gold)"></div></div>
+    </div>
+    <div class="prog-subject">
+      <div class="prog-subj-header">
+        <span>🧠 IQ / Mustahkamlash</span>
+        <span class="prog-subj-pct" id="p-iq" style="color:var(--purple)">0%</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="pf-iq" style="width:0%;background:var(--purple)"></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:14px;font-weight:700;margin-bottom:14px">🎰 Ball Kalkulyatori</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:6px">IQ to'g'ri javoblar: <span id="sl-iq-val" style="color:var(--text);font-weight:600">10</span>/20</div>
+    <input type="range" min="0" max="20" value="10" style="width:100%;accent-color:var(--purple);margin-bottom:14px" oninput="updateCalc()">
+
+    <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Matematika: <span id="sl-math-val" style="color:var(--text);font-weight:600">14</span>/20</div>
+    <input type="range" min="0" max="20" value="14" style="width:100%;accent-color:var(--gold);margin-bottom:14px" oninput="updateCalc()">
+
+    <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Ingliz tili: <span id="sl-eng-val" style="color:var(--text);font-weight:600">10</span>/20</div>
+    <input type="range" min="0" max="20" value="10" style="width:100%;accent-color:var(--blue);margin-bottom:14px" oninput="updateCalc()">
+
+    <div class="score-calc">
+      <div class="calc-row"><span>IQ (×1.1)</span><span class="calc-val" id="c-iq">11.0</span></div>
+      <div class="calc-row"><span>Matematika (×3.1)</span><span class="calc-val" id="c-math">43.4</span></div>
+      <div class="calc-row"><span>Ingliz tili (×3.1)</span><span class="calc-val" id="c-eng">31.0</span></div>
+      <div class="calc-row" style="font-weight:700">
+        <span>JAMI BALL</span>
+        <span class="calc-val" style="font-size:20px" id="c-total">85</span>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:12px;font-size:13px;font-weight:600" id="c-verdict"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ RATING PAGE ═══════════════ -->
+<div class="page" id="page-rating">
+  <div class="page-header">
+    <div class="page-title">Top <span>Reyting</span></div>
+    <div class="page-sub">Eng ko'p test ishlagan o'quvchilar</div>
+  </div>
+
+  <div class="card" style="text-align:center;background:rgba(240,180,41,0.07);border-color:rgba(240,180,41,0.2);margin-bottom:16px">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Sizning o'rningiz</div>
+    <div style="font-family:'Unbounded',sans-serif;font-size:28px;font-weight:900;color:var(--gold)" id="my-rank">#—</div>
+    <div style="font-size:13px;color:var(--muted)" id="my-score-lb">Test ishlang va reytingga kiring!</div>
+  </div>
+
+  <div id="lb-list"></div>
+</div>
+
+<!-- ═══════════════ BOTTOM NAV ═══════════════ -->
+<nav class="nav">
+  <button class="nav-btn active" onclick="goPage('home')" id="nav-home">
+    <span class="icon">🏠</span>Bosh
+  </button>
+  <button class="nav-btn" onclick="goPage('darslar')" id="nav-darslar">
+    <span class="icon">📚</span>Darslar
+  </button>
+  <button class="nav-btn" onclick="goPage('test')" id="nav-test">
+    <span class="icon">✅</span>Test
+  </button>
+  <button class="nav-btn" onclick="goPage('progress')" id="nav-progress">
+    <span class="icon">📊</span>Progress
+  </button>
+  <button class="nav-btn" onclick="goPage('rating')" id="nav-rating">
+    <span class="icon">🏆</span>Reyting
+  </button>
+</nav>
+
+<script>
+// ══ TELEGRAM INIT ══
+if (window.Telegram?.WebApp) {
+  Telegram.WebApp.ready();
+  Telegram.WebApp.expand();
+}
+
+// ══ STATE ══
+let doneDays = JSON.parse(localStorage.getItem('doneDays') || '[]');
+let testResults = JSON.parse(localStorage.getItem('testResults') || '[]');
+
+const tips = [
+  "Har kuni kamida 2 soat o'qing. Doimiylik — muvaffaqiyat kaliti!",
+  "Grammar qoidalarini o'rganib, hemen mashq qiling!",
+  "Yangi so'zlarni kontekstda yod oling — tezroq esda qoladi.",
+  "IQ testlarini vaqt bilan ishlang — 2 daqiqa/savol.",
+  "Xatolaringizni tahlil qiling, qaytadan ishlamang.",
+  "Har hafta 1 to'liq simulyatsiya ishlang.",
+  "Matematikada formulalarni yodlang, keyin mashq qiling!"
+];
+
+document.getElementById('daily-tip').textContent = tips[new Date().getDay()];
+
+// ══ NAVIGATION ══
+function goPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.getElementById('nav-' + id).classList.add('active');
+  window.scrollTo(0, 0);
+  if (id === 'home') updateHome();
+  if (id === 'progress') updateProgress();
+  if (id === 'rating') updateLeaderboard();
+  if (id === 'test') updateTestHistory();
+}
+
+// ══ DAYS ══
+function toggleDay(el, id) {
+  el.classList.toggle('done');
+  if (doneDays.includes(id)) doneDays = doneDays.filter(x => x !== id);
+  else doneDays.push(id);
+  localStorage.setItem('doneDays', JSON.stringify(doneDays));
+  updateHome();
+}
+
+function initDays() {
+  doneDays.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.closest('.day-item').classList.add('done');
+  });
+}
+
+function showWeek(i, btn) {
+  document.querySelectorAll('.week-content').forEach(w => w.classList.remove('active'));
+  document.querySelectorAll('.wtab').forEach(t => t.classList.remove('active'));
+  document.getElementById('wc-' + i).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ══ HOME ══
+function updateHome() {
+  const n = doneDays.length;
+  const pct = Math.round((n / 16) * 100);
+  document.getElementById('h-done').textContent = n;
+  document.getElementById('h-tests').textContent = testResults.length;
+  document.getElementById('h-pct').textContent = pct + '%';
+  setTimeout(() => { document.getElementById('h-fill').style.width = pct + '%'; }, 100);
+}
+
+// ══ PROGRESS ══
+function updateProgress() {
+  // Day groups: eng=days1-12(grammar/vocab/reading), math=day15,16, iq=days13,14
+  const engDays = ['day1','day2','day3','day4','day5','day6','day7','day8','day9','day10','day11','day12'];
+  const mathDays = ['day15','day16'];
+  const iqDays = ['day13','day14'];
+
+  const ep = Math.round((engDays.filter(d=>doneDays.includes(d)).length / engDays.length)*100);
+  const mp = Math.round((mathDays.filter(d=>doneDays.includes(d)).length / mathDays.length)*100);
+  const ip = Math.round((iqDays.filter(d=>doneDays.includes(d)).length / iqDays.length)*100);
+
+  document.getElementById('p-eng').textContent = ep + '%';
+  document.getElementById('p-math').textContent = mp + '%';
+  document.getElementById('p-iq').textContent = ip + '%';
+  setTimeout(() => {
+    document.getElementById('pf-eng').style.width = ep + '%';
+    document.getElementById('pf-math').style.width = mp + '%';
+    document.getElementById('pf-iq').style.width = ip + '%';
+  }, 100);
+
+  updateCalc();
+}
+
+function updateCalc() {
+  const sliders = document.querySelectorAll('#page-progress input[type=range]');
+  const iq = +sliders[0].value, math = +sliders[1].value, eng = +sliders[2].value;
+  document.getElementById('sl-iq-val').textContent = iq;
+  document.getElementById('sl-math-val').textContent = math;
+  document.getElementById('sl-eng-val').textContent = eng;
+  const ci = (iq*1.1).toFixed(1), cm = (math*3.1).toFixed(1), ce = (eng*3.1).toFixed(1);
+  const total = Math.round(+ci + +cm + +ce);
+  document.getElementById('c-iq').textContent = ci;
+  document.getElementById('c-math').textContent = cm;
+  document.getElementById('c-eng').textContent = ce;
+  document.getElementById('c-total').textContent = total;
+  const v = document.getElementById('c-verdict');
+  if (total >= 120) { v.textContent = '🏆 Zo\'r! Litseya kirish mumkin!'; v.style.color = 'var(--green)'; }
+  else if (total >= 90) { v.textContent = '💪 Yaxshi! Ko\'proq mashq kerak'; v.style.color = 'var(--gold)'; }
+  else { v.textContent = '📚 Ko\'proq o\'qish kerak'; v.style.color = 'var(--red)'; }
+}
+
+// ══ TESTS ══
+const tests = {
+  english: [
+    { q: "Choose the correct tense:\nShe ___ to school every day.", opts: ["go","goes","gone","going"], ans: 1 },
+    { q: "Which is correct Passive Voice?\n'They built the house in 1990.'", opts: ["The house is built in 1990","The house was built in 1990","The house were built in 1990","The house has built in 1990"], ans: 1 },
+    { q: "Fill in: I wish I ___ more time.", opts: ["have","had","has","having"], ans: 1 },
+    { q: "Choose the correct article:\n___ Eiffel Tower is in Paris.", opts: ["A","An","The","—"], ans: 2 },
+    { q: "If I ___ you, I would study harder.", opts: ["am","was","were","be"], ans: 2 },
+    { q: "She said she ___ tired.", opts: ["is","was","were","be"], ans: 1 },
+    { q: "Choose the correct modal:\nYou ___ smoke here. It's forbidden.", opts: ["mustn't","don't have to","couldn't","shouldn't"], ans: 0 },
+    { q: "The book ___ written by Shakespeare.", opts: ["is","was","were","has"], ans: 1 },
+    { q: "By the time he arrived, she ___ left.", opts: ["has","had","have","was"], ans: 1 },
+    { q: "Choose the correct preposition:\nShe is good ___ mathematics.", opts: ["in","at","on","for"], ans: 1 }
+  ],
+  math: [
+    { q: "2x + 6 = 14 bo'lsa, x = ?", opts: ["2","3","4","5"], ans: 2 },
+    { q: "3² + 4² = ?", opts: ["25","49","14","20"], ans: 0 },
+    { q: "Uchburchak tomonlari 3, 4, 5. Yuzasi = ?", opts: ["6","10","12","8"], ans: 0 },
+    { q: "log₂(8) = ?", opts: ["2","3","4","1"], ans: 1 },
+    { q: "√144 = ?", opts: ["11","12","13","14"], ans: 1 },
+    { q: "5! = ?", opts: ["60","100","120","80"], ans: 2 },
+    { q: "x² - 5x + 6 = 0 ning ildizlari?", opts: ["1 va 6","2 va 3","−2 va −3","3 va 4"], ans: 1 },
+    { q: "Doira yuzasi = πr². r = 5 bo'lsa, yuza = ?", opts: ["10π","25π","5π","15π"], ans: 1 },
+    { q: "a = 3, b = 4 bo'lsa, a² + 2ab + b² = ?", opts: ["25","49","36","50"], ans: 1 },
+    { q: "Arifmetik progressiya: 2, 5, 8, 11, ... 10-had = ?", opts: ["28","29","30","27"], ans: 1 }
+  ],
+  iq: [
+    { q: "Ketma-ketlikni toping:\n2, 4, 8, 16, ?", opts: ["24","32","30","28"], ans: 1 },
+    { q: "Qaysi so'z boshqacha?\nOlma, Nok, Banan, Sabzi", opts: ["Olma","Nok","Banan","Sabzi"], ans: 3 },
+    { q: "Agar KITOB = 5+10+20+1+2 bo'lsa, DARS = ?", opts: ["25","30","28","35"], ans: 0 },
+    { q: "3, 9, 27, 81, ? Keyingi son:", opts: ["162","243","180","200"], ans: 1 },
+    { q: "Qaysi shaklda simmetriya bor?\nDoira, To'g'ri to'rtburchak, Uchburchak, Barchasi", opts: ["Faqat doira","Faqat to'g'ri to'rtburchak","Faqat uchburchak","Barchasi"], ans: 3 },
+    { q: "5 ta olma 3 bolaga teng taqsimlanadi. Qoladi:", opts: ["0","1","2","3"], ans: 2 },
+    { q: "Agar bugun chorshanba bo'lsa, 10 kundan keyin nechta kun?", opts: ["Shanba","Yakshanba","Dushanba","Seshanba"], ans: 0 },
+    { q: "1, 1, 2, 3, 5, 8, ? (Fibonachchi)", opts: ["11","12","13","14"], ans: 2 },
+    { q: "Qaysi munosabat to'g'ri?\nKitob : O'qish = Qalam : ?", opts: ["Yozish","O'chirish","Chizish","Rasm"], ans: 0 },
+    { q: "100 dan 1 gacha sonlar yig'indisi = ?", opts: ["5000","5050","4950","5100"], ans: 1 }
+  ]
+};
+
+let curTest = [], curQ = 0, curScore = 0, answered = false;
+
+function startTest(type) {
+  if (type === 'full') {
+    curTest = [...tests.english, ...tests.math, ...tests.iq];
+  } else {
+    curTest = [...tests[type]];
+  }
+  // shuffle
+  curTest = curTest.sort(() => Math.random() - 0.5);
+  curQ = 0; curScore = 0; answered = false;
+  document.getElementById('test-modal').classList.add('open');
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('q-area').style.display = 'block';
+  renderQ();
+}
+
+function renderQ() {
+  const q = curTest[curQ];
+  const total = curTest.length;
+  document.getElementById('q-num').textContent = (curQ+1) + '/' + total;
+  document.getElementById('t-prog').style.width = ((curQ/total)*100) + '%';
+  document.getElementById('q-text').textContent = q.q;
+  const opts = document.getElementById('q-opts');
+  opts.innerHTML = '';
+  q.opts.forEach((o, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = o;
+    btn.onclick = () => selectAns(i, q.ans, btn);
+    opts.appendChild(btn);
+  });
+  answered = false;
+}
+
+function selectAns(i, correct, btn) {
+  if (answered) return;
+  answered = true;
+  const btns = document.querySelectorAll('.opt-btn');
+  btns[correct].classList.add('correct');
+  if (i !== correct) btn.classList.add('wrong');
+  else curScore++;
+  setTimeout(() => {
+    curQ++;
+    if (curQ < curTest.length) renderQ();
+    else showResult();
+  }, 900);
+}
+
+function showResult() {
+  document.getElementById('q-area').style.display = 'none';
+  const rs = document.getElementById('result-screen');
+  rs.style.display = 'block';
+  const pct = Math.round((curScore/curTest.length)*100);
+  document.getElementById('r-score').textContent = curScore + '/' + curTest.length;
+  document.getElementById('r-label').textContent = pct + '% to\'g\'ri';
+  document.getElementById('t-prog').style.width = '100%';
+  if (pct >= 80) { document.getElementById('r-emoji').textContent = '🏆'; document.getElementById('r-msg').textContent = 'Zo\'r natija! Davom eting!'; }
+  else if (pct >= 60) { document.getElementById('r-emoji').textContent = '💪'; document.getElementById('r-msg').textContent = 'Yaxshi! Ko\'proq mashq kerak.'; }
+  else { document.getElementById('r-emoji').textContent = '📚'; document.getElementById('r-msg').textContent = 'O\'qishni davom ettiring!'; }
+
+  // Save result
+  testResults.push({ date: new Date().toLocaleDateString(), score: curScore, total: curTest.length, pct });
+  localStorage.setItem('testResults', JSON.stringify(testResults));
+
+  // Update leaderboard
+  const lb = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+  const userName = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || 'Siz';
+  lb.push({ name: userName, score: pct, tests: testResults.length });
+  lb.sort((a,b) => b.score - a.score);
+  localStorage.setItem('leaderboard', JSON.stringify(lb.slice(0, 20)));
+}
+
+function closeTest() {
+  document.getElementById('test-modal').classList.remove('open');
+  updateTestHistory();
+}
+
+function updateTestHistory() {
+  const el = document.getElementById('test-history');
+  if (!testResults.length) { el.textContent = 'Hali test ishlamadingiz'; return; }
+  const last3 = testResults.slice(-3).reverse();
+  el.innerHTML = last3.map(r =>
+    `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+      <span>${r.date}</span>
+      <span style="color:var(--gold);font-weight:700">${r.score}/${r.total} (${r.pct}%)</span>
+    </div>`
+  ).join('');
+}
+
+// ══ LEADERBOARD ══
+const demoLB = [
+  { name: '🥇 Aziz', score: 94, tests: 12 },
+  { name: '🥈 Malika', score: 88, tests: 9 },
+  { name: '🥉 Sardor', score: 85, tests: 15 },
+  { name: 'Nilufar', score: 79, tests: 7 },
+  { name: 'Jasur', score: 74, tests: 11 },
+  { name: 'Dilorom', score: 70, tests: 6 },
+  { name: 'Bobur', score: 65, tests: 8 },
+];
+
+function updateLeaderboard() {
+  const lb = demoLB;
+  const list = document.getElementById('lb-list');
+  const medals = ['🥇','🥈','🥉'];
+  list.innerHTML = lb.map((u, i) => `
+    <div class="lb-item">
+      <div class="lb-rank" style="color:${i<3?'var(--gold)':'var(--muted)'}">${i < 3 ? medals[i] : '#'+(i+1)}</div>
+      <div class="lb-avatar" style="background:rgba(72,149,239,0.1)">👤</div>
+      <div class="lb-info">
+        <div class="lb-name">${u.name}</div>
+        <div class="lb-detail">${u.tests} test ishlagan</div>
+      </div>
+      <div class="lb-score">${u.score}%</div>
+    </div>
+  `).join('');
+
+  document.getElementById('my-rank').textContent = testResults.length ? '#' + (lb.length + 1) : '#—';
+  if (testResults.length) {
+    const avg = Math.round(testResults.reduce((s,r) => s + r.pct, 0) / testResults.length);
+    document.getElementById('my-score-lb').textContent = `O'rtacha: ${avg}% · ${testResults.length} test`;
+  }
+}
+
+// ══ INIT ══
+initDays();
+updateHome();
+updateCalc();
+</script>
+</body>
+</html>
