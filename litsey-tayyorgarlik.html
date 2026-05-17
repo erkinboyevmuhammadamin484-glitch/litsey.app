@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Litsey Tayyorgarlik</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1e;
+    --card: #111827;
+    --card2: #1a2235;
+    --accent: #f59e0b;
+    --accent2: #10b981;
+    --accent3: #6366f1;
+    --text: #f1f5f9;
+    --muted: #64748b;
+    --border: #1e2d45;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 10%, rgba(99,102,241,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 80% 80%, rgba(245,158,11,0.08) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 36px;
+    animation: fadeDown 0.7s ease both;
+  }
+
+  .badge {
+    display: inline-block;
+    background: rgba(245,158,11,0.15);
+    border: 1px solid rgba(245,158,11,0.3);
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-size: clamp(26px, 6vw, 44px);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 15px;
+  }
+
+  /* Stats bar */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.7s 0.1s ease both;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Progress */
+  .progress-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.7s 0.15s ease both;
+  }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+
+  .progress-title { font-weight: 700; font-size: 15px; }
+
+  .progress-pct {
+    font-family: 'Space Mono', monospace;
+    color: var(--accent);
+    font-size: 13px;
+  }
+
+  .progress-bar {
+    height: 8px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--accent3), var(--accent));
+    transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+    width: 0%;
+  }
+
+  /* Week tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    animation: fadeUp 0.7s 0.2s ease both;
+  }
+
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    flex-shrink: 0;
+    padding: 9px 20px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tab:hover { border-color: var(--accent3); color: var(--text); }
+
+  .tab.active {
+    background: var(--accent3);
+    border-color: var(--accent3);
+    color: #fff;
+  }
+
+  /* Week content */
+  .week-panel { display: none; animation: fadeUp 0.4s ease both; }
+  .week-panel.active { display: block; }
+
+  .week-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .week-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .week-title { font-size: 18px; font-weight: 700; }
+  .week-desc { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  /* Day cards */
+  .days-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .day-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .day-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent3);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .day-card:hover { border-color: var(--accent3); transform: translateX(3px); }
+  .day-card:hover::before { opacity: 1; }
+  .day-card.done { border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.06); }
+  .day-card.done::before { background: var(--accent2); opacity: 1; }
+
+  .day-check {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s;
+    background: var(--card2);
+  }
+
+  .day-card.done .day-check {
+    background: var(--accent2);
+    border-color: var(--accent2);
+  }
+
+  .day-info { flex: 1 }
+
+  .day-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 3px;
+  }
+
+  .day-topic { font-size: 15px; font-weight: 600; line-height: 1.3; }
+
+  .day-tag {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .tag-grammar { background: rgba(99,102,241,0.2); color: #a5b4fc; }
+  .tag-vocab   { background: rgba(245,158,11,0.2); color: #fcd34d; }
+  .tag-reading { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+  .tag-test    { background: rgba(239,68,68,0.2);  color: #fca5a5; }
+  .tag-iq      { background: rgba(168,85,247,0.2); color: #d8b4fe; }
+  .tag-math    { background: rgba(14,165,233,0.2); color: #7dd3fc; }
+
+  /* Score simulator */
+  .score-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 24px;
+    animation: fadeUp 0.7s 0.3s ease both;
+  }
+
+  .score-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sliders { display: flex; flex-direction: column; gap: 14px; }
+
+  .slider-row label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .slider-row label span {
+    font-family: 'Space Mono', monospace;
+    color: var(--text);
+    font-size: 12px;
+  }
+
+  input[type=range] {
+    width: 100%;
+    accent-color: var(--accent3);
+    height: 4px;
+    cursor: pointer;
+  }
+
+  .total-score {
+    margin-top: 18px;
+    text-align: center;
+    padding: 16px;
+    background: var(--card2);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+
+  .total-score-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .total-score-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .score-verdict {
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    display: inline-block;
+  }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity:0; transform: translateY(-20px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform: translateY(20px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="badge">🎯 1 Oylik Dastur</div>
+    <h1>Litsey <span>Tayyorgarlik</span></h1>
+    <p class="subtitle">Iqtisodiyot · JIDU · Matematika + Ingliz tili</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-num" id="doneCount">0</div>
+      <div class="stat-label">Bajarildi</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="leftCount">28</div>
+      <div class="stat-label">Qoldi</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">146</div>
+      <div class="stat-label">Max ball</div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-section">
+    <div class="progress-header">
+      <span class="progress-title">📈 Umumiy progress</span>
+      <span class="progress-pct" id="pctText">0%</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <!-- Week tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="showWeek(0,this)">📚 1-Hafta</button>
+    <button class="tab" onclick="showWeek(1,this)">✏️ 2-Hafta</button>
+    <button class="tab" onclick="showWeek(2,this)">🔤 3-Hafta</button>
+    <button class="tab" onclick="showWeek(3,this)">🏁 4-Hafta</button>
+  </div>
+
+  <!-- Week 1 -->
+  <div class="week-panel active" id="week-0">
+    <div class="week-header">
+      <div class="week-icon" style="background:rgba(99,102,241,0.15)">📚</div>
+      <div>
+        <div class="week-title">1-Hafta — Grammatika Poydevori</div>
+        <div class="week-desc">Ingliz tili asosiy grammatika mavzulari</div>
+      </div>
+    </div>
+    <div class="days-grid">
+      <div class="day-card" onclick="toggleDone(this,'d1')">
+        <div class="day-check" id="d1">✓</div>
+        <div class="day-info">
+          <div class="day-label">1-2 Kun</div>
+          <div class="day-topic">Present, Past, Future Tenses — barcha turlari</div>
+        </div>
+        <span class="day-tag tag-grammar">Grammar</span>
+      </div>
+      <div class="day-card" onclick="toggleDone(this,'d2')">
+        <div class="day-check" id="d2">✓</div>
+        <div class="day-info">
+          <div class="day-label">3-4 Kun</div>
+          <div class="day-topic">Modal Verbs — can, must, should, have to, may, might</div>
+        </div>
+        <span class="day-tag tag-grammar">Grammar</span>
+      </div>
+      <div class="day-card" onclick="toggleDone(this,'d3')">
+        <div class="day-check" id="d3">✓</div>
+        <div class="day-info">
+          <div class="day-label">5-6 Kun</div>
+          <div class="day-topic">Conditionals — If sentences (0, 1, 2, 3-tur)</div>
+        </div>
+        <span class="day-tag tag-grammar">Grammar</span>
+      </div>
+      <div class="day-card" onclick="toggleDone(this,'d4')">
+        <div class="day-check" id="d4">✓</div>
+        <div class="day-info">
+          <div class="day-label">7-Kun</div>
+          <div class="day-topic">🔁 Takrorlash + 20 savollik mini test</div>
+        </div>
+        <span class="day-tag tag-test">Test</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week 2 -->
+  <div class="week-panel" id="week-1">
+    <div class="week-header">
+      <div class="week-icon" style="background:rgba(245,158,11,0.15)">✏️</div>
+      <div>
+        <div class="week-title">2-Hafta — Grammar Davomi</div>
+        <div class="week-desc">Passive Voice, Articles, Relative Clauses</div>
+      </div>
+    </div>
+    <div class="days-grid">
+      <div class="day-card" onclick="toggleDone(this,'d5')">
+        <div class="day-check" id="d5">✓</div>
+        <div class="day-info">
+          <div class="day-label">1-2 Kun</div>
+          <div class="day-topic">Passive Voice — barcha zamonlarda</div>
+        </div>
+        <span class="day-tag tag-grammar">Grammar</span>
+      </div>
+      <div class="day-card" onclick="toggleDone(this,'d6')">
+        <div class="day-check" id="d6">✓</div>
+        <div class="day-info">
+          <div class="day-label">3-4 Kun</div>
+          <div class="day-topic">Articles (a, an, the) + Prepositions (in, on, at, by...)</div>
+        </div>
+        <span class="day-tag tag-grammar">Grammar</span>
+      </div>
+      <div class="day-card" onclick="toggleDone(this,'d7')">
+        <div class="day-check" id="d7">✓</div>
+        <div class="day-info">
+          <div class="day-label">5-6 Kun</div>
+          <div class="day-topic">Relative Clauses — who, which, that, where, whose</div>
+        </div>
+        <span class="day-tag tag-grammar">Grammar</span>
+      </div>
+      <div class="day-card" onclick="toggleDone(this,'d8')">
+        <div class="day-check" id="d8">✓</div>
+        <div class="day-info">
+          <div class="day-label">7-Kun</div>
+          <div class="day-topic">🔁 Takrorlash + To'liq grammar test</div>
+        </div>
+        <span class="day-tag tag-test">Test</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week 3 -->
+  <div class="week-panel" id="week-2">
+    <div class="week-header">
+      <div class="week-icon" style="background:rgba(16,185,129,0.15)">🔤</div>
+      <div>
+        <div class="week-title">3-Hafta — Vocabulary + Reading</div>
+        <div class="week-desc">So'z boyligi va matn tushunish ko'nikmalari</div>
+      </div>
+    </div>
+    <div class="days-grid">
+      <div class="day-card" onclick="toggleDone(this,'d9')">
+        <div class="day-check" id="d9">✓</div>
+        <div class="day-info">
+          <div class="day-label">1-2 Kun</div>
+          <div class="day-topic">Iqtisodiyot & biznes mavzusidagi so'zlar (50+ ta)</div>
+        </div>
+        <span class="day-tag tag-vocab">Vocab</span>
+      </div>
+      <div class="day-card" onclick="toggleDone(this,'d10')">
+        <div class="day-check" id="d10">✓</div>
+        <div class="day-info">
+          <div class="day-label">3-4 Kun</div>
+          <div class="day-topic">Word Formation — suffixes (-tion, -ment, -ness), prefixes (un-, re-, dis-)</div>
+        </div>
+        <span class="day-tag tag-vocab">Vocab</span>
+      </div>
+      <div class="day-card" onclick="toggleDone(this,'d11')">
+        <div class="day-check" id="d11">✓</div>
+        <div class="day-info">
+          <div class="day-label">5-6 Kun</div>
+          <div class="day-topic">Reading Comprehension — matn o'qib savollarga javob berish</div>
+        </div>
+        <span class="day-tag tag-reading">Reading</span>
+      </div>
+      <div class="day-card" onclick="toggleDone(this,'d12')">
+        <div class="day-check" id="d12">✓</div>
+        <div class="day-info">
+          <div class="day-label">7-Kun</div>
+          <div class="day-topic">🔁 To'liq test simulyatsiyasi (20 savol)</div>
+        </div>
+        <span class="day-tag tag-test">Test</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week 4 -->
+  <div class="week-panel" id="week-3">
+    <div class="week-header">
+      <div class="week-icon" style="background:rgba(239,68,68,0.15)">🏁</div>
+      <div>
+        <div class="week-title">4-Hafta — Mustahkamlash & IQ</div>
+        <div class="week-desc">Zaif joylarni yopish + IQ mashqlari</div>
+      </div>
+    </div>
+    <div class="days-grid">
+      <div class="day-card" onclick="toggleDone(this,'d13')">
+        <div class="day-check" id="d13">✓</div>
+        <div class="day-info">
+          <div class="day-label">1-2 Kun</div>
+          <div class="day-topic">Zaif mavzularni qayta ishlash + xato tahlili</div>
+        </div>
+        <span class="day-tag tag-grammar">Grammar</span>
+      </div>
+      <div class="day-card" onclick="toggleDone(this,'d14')">
+        <div class="day-check" id="d14">✓</div>
+        <div class="day-info">
+          <div class="day-label">3-4 Kun</div>
+          <div class="day-topic">IQ mashqlari — mantiq, ketma-ketlik, analogiya (20 savol)</div>
+        </div>
+        <span class="day-tag tag-iq">IQ</span>
+      </div>
+      <div class="day-card" onclick="toggleDone(this,'d15')">
+        <div class="day-check" id="d15">✓</div>
+        <div class="day-info">
+          <div class="day-label">5-6 Kun</div>
+          <div class="day-topic">Matematika — qiyin masalalar + testlar</div>
+        </div>
+        <span class="day-tag tag-math">Math</span>
+      </div>
+      <div class="day-card" onclick="toggleDone(this,'d16')">
+        <div class="day-check" id="d16">✓</div>
+        <div class="day-info">
+          <div class="day-label">7-Kun</div>
+          <div class="day-topic">🏆 To'liq imtihon simulyatsiyasi (60 savol, 2 soat)</div>
+        </div>
+        <span class="day-tag tag-test">Final Test</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Score Simulator -->
+  <div class="score-section">
+    <div class="score-title">🎰 Ball Kalkulyatori</div>
+    <div class="sliders">
+      <div class="slider-row">
+        <label>IQ to'g'ri javoblar <span id="iqVal">10 / 20</span></label>
+        <input type="range" min="0" max="20" value="10" oninput="calcScore()">
+      </div>
+      <div class="slider-row">
+        <label>Matematika to'g'ri javoblar <span id="mathVal">14 / 20</span></label>
+        <input type="range" min="0" max="20" value="14" oninput="calcScore()">
+      </div>
+      <div class="slider-row">
+        <label>Ingliz tili to'g'ri javoblar <span id="engVal">10 / 20</span></label>
+        <input type="range" min="0" max="20" value="10" oninput="calcScore()">
+      </div>
+    </div>
+    <div class="total-score">
+      <div class="total-score-num" id="totalScore">—</div>
+      <div class="total-score-label">/ 146 maksimal ball</div>
+      <div class="score-verdict" id="verdict"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const TOTAL_DAYS = 16;
+  let done = JSON.parse(localStorage.getItem('litsey_done') || '[]');
+
+  function init() {
+    done.forEach(id => {
+      const check = document.getElementById(id);
+      if (check) check.closest('.day-card').classList.add('done');
+    });
+    updateStats();
+    calcScore();
+    setTimeout(() => {
+      const pct = Math.round((done.length / TOTAL_DAYS) * 100);
+      document.getElementById('progressFill').style.width = pct + '%';
+    }, 300);
+  }
+
+  function toggleDone(card, id) {
+    card.classList.toggle('done');
+    if (done.includes(id)) {
+      done = done.filter(x => x !== id);
+    } else {
+      done.push(id);
+    }
+    localStorage.setItem('litsey_done', JSON.stringify(done));
+    updateStats();
+  }
+
+  function updateStats() {
+    const n = done.length;
+    document.getElementById('doneCount').textContent = n;
+    document.getElementById('leftCount').textContent = TOTAL_DAYS - n;
+    const pct = Math.round((n / TOTAL_DAYS) * 100);
+    document.getElementById('pctText').textContent = pct + '%';
+    document.getElementById('progressFill').style.width = pct + '%';
+  }
+
+  function showWeek(i, btn) {
+    document.querySelectorAll('.week-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('week-' + i).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function calcScore() {
+    const inputs = document.querySelectorAll('input[type=range]');
+    const iq   = +inputs[0].value;
+    const math = +inputs[1].value;
+    const eng  = +inputs[2].value;
+
+    document.getElementById('iqVal').textContent   = iq   + ' / 20';
+    document.getElementById('mathVal').textContent = math + ' / 20';
+    document.getElementById('engVal').textContent  = eng  + ' / 20';
+
+    const total = Math.round(iq * 1.1 + math * 3.1 + eng * 3.1);
+    document.getElementById('totalScore').textContent = total;
+
+    const v = document.getElementById('verdict');
+    if (total >= 120) {
+      v.textContent = '🏆 Zo\'r! Litseya kirish mumkin!';
+      v.style.background = 'rgba(16,185,129,0.2)';
+      v.style.color = '#6ee7b7';
+    } else if (total >= 90) {
+      v.textContent = '💪 Yaxshi! Ko\'proq mashq kerak';
+      v.style.background = 'rgba(245,158,11,0.2)';
+      v.style.color = '#fcd34d';
+    } else {
+      v.textContent = '📚 Ko\'proq o\'qish kerak';
+      v.style.background = 'rgba(239,68,68,0.15)';
+      v.style.color = '#fca5a5';
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
