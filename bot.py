@@ -51,7 +51,7 @@ from telegram.ext import (
 # ══════════════════════════════════════════════
 BOT_TOKEN   = os.environ.get("BOT_TOKEN", "8916754154:AAF2Xz3iU8b6g7D8rdVoszCbrx0s8Hk9l_4")
 WEB_APP_URL = os.environ.get("WEB_APP_URL", "https://@litsey_prep_bot")
-ADMIN_ID    = int(os.environ.get("ADMIN_ID", "@Mephesor"))
+ADMIN_ID    = int(os.environ.get("ADMIN_ID", "6822775730"))
 DB_FILE     = "database.json"
 CHIZIQ      = "─" * 28
 
